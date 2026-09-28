@@ -1,13 +1,14 @@
 -- ===============================================
 -- Users
+-- Demo login password for all seeded users: "Password123!" (bcrypt hash below)
 -- ===============================================
 INSERT INTO users (email, name, password_hash, created_at)
 VALUES
-  ('alice@example.com', 'Alice', 'hashed_pw_1', NOW()),
-  ('bob@example.com', 'Bob', 'hashed_pw_2', NOW()),
-  ('carol@example.com', 'Carol', 'hashed_pw_3', NOW()),
-  ('dave@example.com', 'Dave', 'hashed_pw_4', NOW()),
-  ('eve@example.com', 'Eve', 'hashed_pw_5', NOW());
+  ('alice@example.com', 'Alice', '$2a$10$kWSgg7yHGbWXckaN83z7zuTjPyzgAVmdme3.y2aS.6oimGp22X8yy', NOW()),
+  ('bob@example.com', 'Bob', '$2a$10$kWSgg7yHGbWXckaN83z7zuTjPyzgAVmdme3.y2aS.6oimGp22X8yy', NOW()),
+  ('carol@example.com', 'Carol', '$2a$10$kWSgg7yHGbWXckaN83z7zuTjPyzgAVmdme3.y2aS.6oimGp22X8yy', NOW()),
+  ('dave@example.com', 'Dave', '$2a$10$kWSgg7yHGbWXckaN83z7zuTjPyzgAVmdme3.y2aS.6oimGp22X8yy', NOW()),
+  ('eve@example.com', 'Eve', '$2a$10$kWSgg7yHGbWXckaN83z7zuTjPyzgAVmdme3.y2aS.6oimGp22X8yy', NOW());
 
 -- ===============================================
 -- Subscriptions

@@ -5,13 +5,13 @@ import io.github.kitamura.subtrack_api.service.UserService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
-import java.util.List;
 
 
 /**
@@ -43,13 +43,14 @@ public class UserController {
 
 
     /**
-     * Retrieve all active users (excluding soft-deleted).
-     * @return ResponseEntity with list of UserDto
+     * Authenticate a user with email and password.
+     * @param request LoginRequest containing email and password
+     * @return ResponseEntity with authenticated UserDto
      */
-    @GetMapping
-    public ResponseEntity<List<UserDto>> getAllUsers() {
-        List<UserDto> users = userService.getAllActiveUsers();
-        return ResponseEntity.ok(users);
+    @PostMapping("/login")
+    public ResponseEntity<UserDto> login(@RequestBody @Valid LoginRequest request) {
+        UserDto user = userService.authenticate(request.getEmail(), request.getPassword());
+        return ResponseEntity.ok(user);
     }
 
 
@@ -87,6 +88,20 @@ public class UserController {
 
         @NotBlank
         private String name;
+
+        @NotBlank
+        @Size(min = 8, max = 100)
+        private String password;
+    }
+
+    // =====================================================
+    // DTO: ログイン用
+    // =====================================================
+    @Data
+    public static class LoginRequest {
+        @NotBlank
+        @Email
+        private String email;
 
         @NotBlank
         private String password;

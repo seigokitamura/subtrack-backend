@@ -16,6 +16,7 @@ import io.github.kitamura.subtrack_api.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -65,7 +66,7 @@ public class SubscriptionService {
             return SubscriptionHistoryResponseDto.of(saved, history);
         } catch (DataIntegrityViolationException e) {
             log.error("[SubscriptionService] DataIntegrityViolation on create userId={}, name={}", userId, request.getName(), e);
-            throw new CustomException("Failed to create subscription: possible duplicate or constraint violation", e);
+            throw new CustomException(HttpStatus.CONFLICT, "Failed to create subscription: possible duplicate or constraint violation");
         } catch (Exception e) {
             log.error("[SubscriptionService] Unexpected error on create for userId={}", userId, e);
             throw new CustomException("Failed to create subscription", e);
@@ -83,7 +84,7 @@ public class SubscriptionService {
                 .orElseThrow(() -> new CustomException("Subscription not found: " + subscriptionId));
 
         if (existing.isDeleted()) {
-            throw new CustomException("Cannot update deleted subscription: " + subscriptionId);
+            throw new CustomException(HttpStatus.CONFLICT, "Cannot update deleted subscription: " + subscriptionId);
         }
 
         if (!existing.getUser().getId().equals(userId)) {
@@ -101,7 +102,7 @@ public class SubscriptionService {
             return SubscriptionHistoryResponseDto.of(saved, history);
         } catch (DataIntegrityViolationException e) {
             log.error("[SubscriptionService] DataIntegrityViolation on update subscriptionId={}", subscriptionId, e);
-            throw new CustomException("Failed to update subscription: constraint violation", e);
+            throw new CustomException(HttpStatus.CONFLICT, "Failed to update subscription: constraint violation");
         } catch (Exception e) {
             log.error("[SubscriptionService] Unexpected error on update subscriptionId={}", subscriptionId, e);
             throw new CustomException("Failed to update subscription", e);
@@ -119,7 +120,7 @@ public class SubscriptionService {
                 .orElseThrow(() -> new CustomException("Subscription not found: " + subscriptionId));
 
         if (existing.isDeleted()) {
-            throw new CustomException("Subscription already deleted: " + subscriptionId);
+            throw new CustomException(HttpStatus.CONFLICT, "Subscription already deleted: " + subscriptionId);
         }
 
         if (!existing.getUser().getId().equals(userId)) {

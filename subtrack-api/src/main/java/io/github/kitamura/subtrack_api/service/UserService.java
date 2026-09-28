@@ -7,11 +7,10 @@ import io.github.kitamura.subtrack_api.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +29,7 @@ public class UserService {
 
         userRepository.findActiveByEmail(email)
                 .ifPresent(u -> {
-                    throw new CustomException("User already exists with email: " + email);
+                    throw new CustomException(HttpStatus.CONFLICT, "User already exists with email: " + email);
                 });
 
         User user = User.builder()
@@ -45,23 +44,28 @@ public class UserService {
             return toDto(saved);
         } catch (DataIntegrityViolationException e) {
             log.error("[UserService] DataIntegrityViolation on create for email={}", email, e);
-            throw new CustomException("Failed to create user: constraint violation", e);
+            throw new CustomException(HttpStatus.CONFLICT, "Failed to create user: constraint violation");
         } catch (Exception e) {
             log.error("[UserService] Unexpected error on create for email={}", email, e);
-            throw new CustomException("Failed to create user", e);
+            throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to create user");
         }
     }
 
     // =====================================================
-    // 全有効ユーザー取得
+    // ログイン認証（メールアドレス + パスワード）
     // =====================================================
     @Transactional(readOnly = true)
-    public List<UserDto> getAllActiveUsers() {
-        log.info("[UserService] Fetching all active users");
-        return userRepository.findAllActive()
-                .stream()
-                .map(this::toDto)
-                .toList();
+    public UserDto authenticate(String email, String rawPassword) {
+        log.info("[UserService] Authenticating user: {}", email);
+
+        User user = userRepository.findActiveByEmail(email)
+                .orElseThrow(() -> new CustomException(HttpStatus.UNAUTHORIZED, "Invalid email or password"));
+
+        if (!passwordEncoder.matches(rawPassword, user.getPasswordHash())) {
+            throw new CustomException(HttpStatus.UNAUTHORIZED, "Invalid email or password");
+        }
+
+        return toDto(user);
     }
 
     // =====================================================

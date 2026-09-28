@@ -1,6 +1,7 @@
 package io.github.kitamura.subtrack_api.exception;
 
 import jakarta.validation.ConstraintViolationException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -14,15 +15,16 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import java.util.stream.Collectors;
 
 @ControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     // =====================================================
-    // Handle CustomException (application-specific errors)
+    // Handle CustomException (application-specific errors, status carried by the exception)
     // =====================================================
     @ExceptionHandler(CustomException.class)
     protected ResponseEntity<ErrorResponse> handleCustomException(CustomException ex) {
-        ErrorResponse err = new ErrorResponse("NOT_FOUND", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(err);
+        ErrorResponse err = new ErrorResponse(ex.getStatus().name(), ex.getMessage());
+        return ResponseEntity.status(ex.getStatus()).body(err);
     }
 
     // =====================================================
@@ -65,10 +67,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     // =====================================================
     // Handle all other exceptions (internal errors)
+    // Do not leak internal exception details to the client; log server-side instead.
     // =====================================================
     @ExceptionHandler(Exception.class)
     protected ResponseEntity<ErrorResponse> handleAll(Exception ex) {
-        ErrorResponse err = new ErrorResponse("INTERNAL_ERROR", ex.getMessage());
+        log.error("Unhandled exception", ex);
+        ErrorResponse err = new ErrorResponse("INTERNAL_ERROR", "An unexpected error occurred");
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(err);
     }
 }
