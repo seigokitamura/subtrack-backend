@@ -69,7 +69,7 @@ public class SubscriptionService {
             throw new CustomException(HttpStatus.CONFLICT, "Failed to create subscription: possible duplicate or constraint violation");
         } catch (Exception e) {
             log.error("[SubscriptionService] Unexpected error on create for userId={}", userId, e);
-            throw new CustomException("Failed to create subscription", e);
+            throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to create subscription");
         }
     }
 
@@ -105,7 +105,7 @@ public class SubscriptionService {
             throw new CustomException(HttpStatus.CONFLICT, "Failed to update subscription: constraint violation");
         } catch (Exception e) {
             log.error("[SubscriptionService] Unexpected error on update subscriptionId={}", subscriptionId, e);
-            throw new CustomException("Failed to update subscription", e);
+            throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to update subscription");
         }
     }
 
@@ -187,7 +187,7 @@ public class SubscriptionService {
             return savedHistory;
         } catch (Exception e) {
             log.error("Failed to serialize subscription history for subscriptionId={}", subscription.getId(), e);
-            throw new CustomException("Failed to serialize subscription history", e);
+            throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to serialize subscription history");
         }
     }
 
